@@ -18,22 +18,24 @@
   can the app. If you bind DSH to 0.0.0.0 without that rule, you have put a
   shell on your LAN no matter what this configuration says.
 
-  WHY cleartextTrafficPermitted IS NOT SCOPED BY DEFAULT
+  WHY cleartextTrafficPermitted IS NOT SCOPED
   Android's network security config matches literal hosts only — it has no
   CIDR or wildcard support, so "allow 100.64.0.0/10 and RFC1918" is not
   expressible. Since a tailnet address is whatever your tailnet assigned, the
   default below permits cleartext to any host and leans on the firewall rule.
 
-  To narrow it, pass your own address at build time:
+  The build can also pin your own host into a <domain-config> allowlist:
 
     .\build.ps1 -CleartextHosts 100.x.y.z
     .\build.ps1 -CleartextHosts 100.x.y.z,dsh-desktop.tailXXXX.ts.net
     ./build.sh with the cleartext-hosts option
 
-  That renders a deny-by-default base-config plus a <domain-config> allowlist.
-  Note the tradeoff: the generated allowlist is fixed at build time, so the app
-  will refuse cleartext to any host you did not list. Only do this once your
-  desktop address is stable.
+  Be clear about what that does and does not buy you. The base stays
+  permissive in both modes, because this file is a published artifact and a
+  deny-all base belongs to whoever owns the device, not to a build flag. The
+  allowlist is documentation of your intended host, not a boundary — it does
+  not stop the app reaching any other host. SECURITY.md says the same thing in
+  the same words on purpose.
 -->
 <network-security-config>
     <base-config cleartextTrafficPermitted="true">

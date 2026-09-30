@@ -54,14 +54,18 @@ oversight:
   Adding TLS would mean a self-signed certificate the WebView refuses to trust,
   which buys a warning rather than a guarantee.
 
-To narrow the scope, build with an explicit allowlist:
+To pin your intended host into a `<domain-config>`, build with an explicit list:
 
 ```powershell
 .\build.ps1 -CleartextHosts 100.x.y.z,dsh-desktop.tailXXXX.ts.net
 ```
 
-This renders a deny-by-default base config with only the hosts you name
-permitted. It is a build-time decision, so it is fixed once installed.
+**This is not a boundary, and it is important not to read it as one.** The
+generated config keeps a permissive `base-config` in both modes, because this
+file ships to other people's devices and a deny-all base is a decision for the
+device owner, not for a build flag. The allowlist records the host you meant to
+use; it does not stop the app from reaching any other host. Only the firewall
+rule limits reachability.
 
 ## Debug-signed releases
 

@@ -133,31 +133,31 @@ nsc_target="$root/android/res/xml/network_security_config.xml"
 
 if [ -z "$cleartext_hosts" ]; then
     # Drop the marker line so the template's trailing newline still closes cleanly.
-    sed -e 's/@@CLEARTEXT_BASE@@/true/' -e '/@@DOMAIN_CONFIGS@@/d' \
-        "$nsc_template" > "$nsc_target"
+    sed -e '/@@DOMAIN_CONFIGS@@/d' "$nsc_template" > "$nsc_target"
     printf 'Cleartext: any host (default; firewall rule is the boundary)\n'
 else
-    {
-        sed -e 's/@@CLEARTEXT_BASE@@/false/' -e '/@@DOMAIN_CONFIGS@@/d' "$nsc_template" |
-        awk -v hosts="$cleartext_hosts" '
-            /<\/network-security-config>/ {
-                n = split(hosts, list, ",")
-                for (i = 1; i <= n; i++) {
-                    h = list[i]
-                    gsub(/^[ \t]+|[ \t]+$/, "", h)
-                    if (h == "") continue
-                    print "    <domain-config cleartextTrafficPermitted=\"true\">"
-                    if (h ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/)
-                        print "        <domain>" h "</domain>"
-                    else
-                        print "        <domain includeSubdomains=\"true\">" h "</domain>"
-                    print "    </domain-config>"
-                }
+    # The base stays permissive in both modes: it is documented, and a deny-all
+    # base would make the allowlist below unreachable. The allowlist is a
+    # convenience, not a security boundary — see SECURITY.md.
+    sed -e '/@@DOMAIN_CONFIGS@@/d' "$nsc_template" |
+    awk -v hosts="$cleartext_hosts" '
+        /<\/network-security-config>/ {
+            n = split(hosts, list, ",")
+            for (i = 1; i <= n; i++) {
+                h = list[i]
+                gsub(/^[ \t]+|[ \t]+$/, "", h)
+                if (h == "") continue
+                print "    <domain-config cleartextTrafficPermitted=\"true\">"
+                if (h ~ /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/)
+                    print "        <domain>" h "</domain>"
+                else
+                    print "        <domain includeSubdomains=\"true\">" h "</domain>"
+                print "    </domain-config>"
             }
-            { print }
-        '
-    } > "$nsc_target"
-    printf 'Cleartext: DENIED except %s\n' "$cleartext_hosts"
+        }
+        { print }
+    ' > "$nsc_target"
+    printf 'Cleartext: any host, with these pinned in the allowlist: %s\n' "$cleartext_hosts"
 fi
 
 # ---------------------------------------------------------------- resources

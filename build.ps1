@@ -176,9 +176,12 @@ $hosts = @($CleartextHosts |
            ForEach-Object { $_.Trim() } |
            Where-Object { $_ -ne '' })
 
+# The base stays permissive in both modes: it is documented, and a deny-all
+# base would make the allowlist below unreachable. The allowlist is a
+# convenience, not a security boundary — see SECURITY.md.
 $nsc = Get-Content $nscTemplate -Raw
 if ($hosts.Count -eq 0) {
-    $nsc = $nsc.Replace('@@CLEARTEXT_BASE@@', 'true').Replace('@@DOMAIN_CONFIGS@@', '')
+    $nsc = $nsc.Replace('@@DOMAIN_CONFIGS@@', '')
     Write-Host "Cleartext: any host (default; firewall rule is the boundary)"
 } else {
     $blocks = foreach ($h in $hosts) {
@@ -193,9 +196,8 @@ $attrs
     </domain-config>
 "@
     }
-    $nsc = $nsc.Replace('@@CLEARTEXT_BASE@@', 'false')
     $nsc = $nsc.Replace('@@DOMAIN_CONFIGS@@', ($blocks -join "`r`n"))
-    Write-Host "Cleartext: DENIED except $($hosts -join ', ')"
+    Write-Host "Cleartext: any host, with these pinned in the allowlist: $($hosts -join ', ')"
 }
 # UTF8Encoding($false) = no BOM. aapt2 rejects a BOM-prefixed XML with
 # "not well-formed (invalid token)", and PowerShell's -Encoding UTF8 adds one.

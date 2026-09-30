@@ -138,17 +138,20 @@ anywhere but your own build.
 report `Reachable — HTTP 401`, which is correct, because the port answers and
 rejects unauthenticated index requests — then **Save & Connect**.
 
-**Hardening the cleartext scope (optional).** By default the app permits
-cleartext HTTP to any host, because Android's network security config cannot
-express "private ranges only" and the firewall rule is the real boundary. If
-your desktop address is stable, build with an allowlist instead:
+**Pinning your host (optional, and not a security boundary).** Android's
+network security config cannot express "private ranges only" — it matches
+literal hosts with no CIDR or wildcard support — so cleartext stays permitted
+to any host and the firewall rule is the real boundary. You can still pin your
+own host into a `<domain-config>` so the built config documents your intended
+endpoint:
 
 ```powershell
 .\build.ps1 -CleartextHosts 100.x.y.z,dsh-desktop.tailXXXX.ts.net
 ```
 
-That renders a deny-by-default config with only those hosts permitted. See the
-header of `android/res/xml/network_security_config.template.xml`.
+To be plain about the limits: the base stays permissive in both modes, so this
+does not stop the app reaching other hosts. It is a record of intent, not a
+fence. See [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -189,6 +192,8 @@ Stated plainly, because the stakes are code execution. Full version in
 - **The firewall rule is the real boundary.** Tailscale-scoped, one port. If
   you remove it while the patched instance is bound to `0.0.0.0`, you have put
   a shell on your LAN.
+- **The `-CleartextHosts` allowlist is documentation, not enforcement.** The
+  base config stays permissive; the flag records which host you meant to use.
 - **Tailscale ACLs are your second boundary.** To restrict which tailnet
   devices reach the port, do it in the tailnet policy file rather than in this
   app.
@@ -259,7 +264,7 @@ private. Never commit a real release keystore.
 | `Test` reports `Reachable — HTTP 401` but the app still fails | Token is stale | Re-pair with the fresh `LAN:` URL |
 | `Test` times out | DSH not running, or firewall rule missing | Restart DSH with the patch; re-check the rule |
 | Desktop IP changed | Tailscale reassigned the address | `tailscale ip -4`, then re-pair — or use the MagicDNS name instead of the IP |
-| App can't reach a host you allowlisted | `-CleartextHosts` was set and that host isn't on it | Rebuild with the host added, or rebuild with no allowlist |
+| App can't reach a host you pinned | `-CleartextHosts` is a record of intent, not a fence — the base config stays permissive | Almost certainly not the cause. Check Tailscale, DSH, and the firewall rule |
 | `dsh-stream-market` spams "port 18899 occupied" | Two DSH instances running at once | Run **one**. Stop the Electron desktop app before starting the patched `dsh web`, or ignore it — the feature degrades, the web app still boots |
 | Everything works, then dies after a desktop restart | Token is per-process | Re-pair. This is by design, not a bug |
 | `aapt2` errors on a resource name containing a dot | A `.template.xml` file reached the compiler | Build through `build.ps1`/`build.sh`, which filters templates out |
