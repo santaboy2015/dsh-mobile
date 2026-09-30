@@ -1,0 +1,25 @@
+# Normalize text to LF in the repository, and check out native line endings
+# where the platform's tools actually require them.
+* text=auto eol=lf
+
+# Windows tooling. PowerShell 5.1 tolerates LF, but batch files and many
+# Windows editors do not — check these out CRLF.
+*.ps1   text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# POSIX tooling must stay LF or the shebang breaks.
+*.sh    text eol=lf
+
+# Binary — never touch.
+*.apk       binary
+*.idsig     binary
+*.keystore  binary
+*.jks       binary
+*.png       binary
+*.jpg       binary
+*.webp      binary
+
+# Keep diffs honest in a repo that is mostly prose.
+*.md    text eol=lf
+*.yml   text eol=lf

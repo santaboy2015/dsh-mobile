@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Launcher icon: a terminal chevron over a dark tile.
+  Vector only, so it renders on every density without a mipmap set.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#0E0F12"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <path
+        android:fillColor="#1B1E24"
+        android:pathData="M14,22h80a6,6 0 0 1 6,6v52a6,6 0 0 1 -6,6h-80a6,6 0 0 1 -6,-6v-52a6,6 0 0 1 6,-6z" />
+
+    <path
+        android:fillColor="#4C8DFF"
+        android:pathData="M26,44l14,10 -14,10z" />
+
+    <path
+        android:strokeColor="#E6E8EC"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M48,66h34" />
+</vector>

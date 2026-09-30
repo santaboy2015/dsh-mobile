@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="dsh_bg">#0E0F12</color>
+    <color name="dsh_surface">#16181D</color>
+    <color name="dsh_accent">#4C8DFF</color>
+    <color name="dsh_text">#E6E8EC</color>
+    <color name="dsh_text_dim">#9AA0AA</color>
+    <color name="dsh_danger">#FF6B6B</color>
+</resources>

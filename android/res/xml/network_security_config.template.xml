@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TEMPLATE — build.ps1 / build.sh render this into network_security_config.xml
+  and drop this file's own .template suffix. Do not edit the generated file;
+  edit this one, or pass -CleartextHosts to the build.
+
+  WHY CLEARTEXT AT ALL
+  DSH is served over plain HTTP. The transport that actually protects it is
+  WireGuard (Tailscale), which encrypts every packet between the phone and the
+  desktop. Adding TLS on top would mean a self-signed certificate the WebView
+  refuses, or a `tailscale cert` name — neither is required for the tunnel to be
+  private. So cleartext is permitted, and the network layer carries the
+  confidentiality.
+
+  THE REAL BOUNDARY IS NOT THIS FILE
+  It is the desktop firewall rule that pins the DSH port to the Tailscale
+  interface (see README, "Step 1"). This file cannot enforce that, and neither
+  can the app. If you bind DSH to 0.0.0.0 without that rule, you have put a
+  shell on your LAN no matter what this configuration says.
+
+  WHY cleartextTrafficPermitted IS NOT SCOPED BY DEFAULT
+  Android's network security config matches literal hosts only — it has no
+  CIDR or wildcard support, so "allow 100.64.0.0/10 and RFC1918" is not
+  expressible. Since a tailnet address is whatever your tailnet assigned, the
+  default below permits cleartext to any host and leans on the firewall rule.
+
+  To narrow it, pass your own address at build time:
+
+    .\build.ps1 -CleartextHosts 100.x.y.z
+    .\build.ps1 -CleartextHosts 100.x.y.z,dsh-desktop.tailXXXX.ts.net
+    ./build.sh with the cleartext-hosts option
+
+  That renders a deny-by-default base-config plus a <domain-config> allowlist.
+  Note the tradeoff: the generated allowlist is fixed at build time, so the app
+  will refuse cleartext to any host you did not list. Only do this once your
+  desktop address is stable.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="@@CLEARTEXT_BASE@@">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+@@DOMAIN_CONFIGS@@
+</network-security-config>

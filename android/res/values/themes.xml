@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DshTheme" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/dsh_bg</item>
+        <item name="android:colorPrimary">@color/dsh_accent</item>
+        <item name="android:colorAccent">@color/dsh_accent</item>
+        <item name="android:statusBarColor">@color/dsh_bg</item>
+        <item name="android:navigationBarColor">@color/dsh_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

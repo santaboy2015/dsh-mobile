@@ -1,0 +1,37 @@
+# dsh-tailnet.patch.yml — expose the DSH web UI on every local interface,
+# including the Tailscale address, so an Android client can reach it.
+#
+# WHY A PATCH AND NOT A FLAG
+#   `dsh web --host 0.0.0.0` is refused on purpose:
+#     "error: --host 0.0.0.0 is intentionally not supported yet for safety:
+#      it would expose remote code execution to the network"
+#   That guard is correct — DSH can run shell commands. This overlay is the
+#   deliberate override, and it is only safe because of the firewall rule in
+#   README.md that pins port 3080 to the Tailscale interface alone.
+#
+# WHAT IT DOES
+#   webserver.config.host = 0.0.0.0 makes the host plugin enumerate every
+#   non-internal IPv4 address at boot and add each one to the connection
+#   plugin's `trustedHosts` fence (see resolveLanTrust in @deepseek-ai/dsh-web-app).
+#   Your Tailscale address is one of those, so /api requests from the phone
+#   pass the Host/Origin fence with no extra trustedHosts entry.
+#
+# DEPLOYMENT SHAPE
+#   This is a patch overlay over the web profile, applied with:
+#     dsh web --patch <this file>
+#   A patch replaces the targeted row's WHOLE `config` block, so the webserver
+#   row below restates `compression: gzip` explicitly. Dropping it silently
+#   downgrades to no compression.
+#
+# SECURITY POSTURE
+#   Treat a bound 0.0.0.0 DSH like an open shell. The browser-auth token is
+#   the only application-layer gate, and anyone who holds it gets code
+#   execution on this machine. Keep the firewall rule scoped to Tailscale.
+
+- id: webserver
+  config:
+    host: 0.0.0.0
+    port: 3080
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024

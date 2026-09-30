@@ -1,0 +1,27 @@
+# dsh-tailnet-3081.patch.yml
+#
+# Same overlay as dsh-tailnet.patch.yml, on port 3081 instead of 3080.
+#
+# USE THIS ONE when the DeepSeek Harness desktop app is already running.
+# The desktop app holds 3080 on 127.0.0.1 and cannot be patched — its profile is
+# managed exclusively by the Electron shell — so a second instance on 3080 would
+# fail to bind. On 3081 both run side by side:
+#
+#   3080  desktop app    -> your PC's browser, 127.0.0.1 only
+#   3081  this instance  -> your phone, over Tailscale
+#
+# Side effect to expect: whichever instance loses the race for the
+# dsh-stream-market port (18899) logs a repeating "port occupied, retrying"
+# warning. The web UI boots and works normally in both; only that plugin
+# degrades. Harmless, but it makes the console noisy.
+#
+# When you do NOT need the desktop app open, prefer dsh-tailnet.patch.yml on
+# 3080 and run a single instance.
+
+- id: webserver
+  config:
+    host: 0.0.0.0
+    port: 3081
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
