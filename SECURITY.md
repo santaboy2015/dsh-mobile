@@ -40,7 +40,13 @@ There is no bug bounty. Reasonable reports get a fix and credit.
 | A compromised tailnet device | Tailscale ACLs are the tool. Restrict which devices may reach the port in your tailnet policy file |
 | A phone that is lost or stolen while unlocked | The token sits in app-private `SharedPreferences`, readable on a rooted or debuggable device. Pairing again after a restart invalidates the old token |
 | A hostile APK claiming to be an update | Debug-signed releases share a public keystore — see below. Build your own, or verify the release hash out of band |
-| Traffic to a host you did not intend | Unless you build with `-CleartextHosts`, cleartext HTTP is permitted to any host. The firewall rule, not the app, is what limits reachability |
+| Traffic to a host you did not intend | Unless you pin hosts with `-CleartextHosts`, cleartext HTTP is permitted to any host. That flag records intent only — the firewall rule, not the app, is what limits reachability |
+
+The strongest control available is to keep DSH on loopback and name your host
+explicitly, so no firewall rule is in the path at all. See
+[TAILSCALE-BINDINGS.md](TAILSCALE-BINDINGS.md). It is stricter because the
+boundary is enforced by the server process rather than by a rule someone can
+forget.
 
 ## Cleartext HTTP
 
@@ -53,6 +59,12 @@ oversight:
 - Confidentiality comes from WireGuard, which encrypts the link regardless.
   Adding TLS would mean a self-signed certificate the WebView refuses to trust,
   which buys a warning rather than a guarantee.
+
+One honest caveat: `tailscale serve` is a real exception, since it issues
+Let's Encrypt certificates for `*.ts.net` names and a WebView would trust them.
+It is not used here because it adds a second moving part on the desktop to
+encrypt traffic that WireGuard has already encrypted. It becomes worth
+considering only if you want to serve DSH beyond the tailnet.
 
 To pin your intended host into a `<domain-config>`, build with an explicit list:
 
